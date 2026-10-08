@@ -173,31 +173,95 @@ fun RequestSection(
             )
         }
 
-        // Quick Presets Row
-        val scrollState = rememberScrollState()
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(scrollState),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        // ⚡ One-Click Automatic CRUD Actions (JSONPlaceholder)
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text("Preset:", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.align(Alignment.CenterVertically))
-            SuggestionChip(
-                onClick = { viewModel.loadPreset("JSONPlaceholder GET") },
-                label = { Text("GET Post #1", fontSize = 11.sp) }
+            Text(
+                text = "⚡ Otomatis Jalankan (1-Klik):",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary
             )
-            SuggestionChip(
-                onClick = { viewModel.loadPreset("JSONPlaceholder POST") },
-                label = { Text("POST New Post", fontSize = 11.sp) }
-            )
-            SuggestionChip(
-                onClick = { viewModel.loadPreset("HttpBin IP Check") },
-                label = { Text("IP Check", fontSize = 11.sp) }
-            )
-            SuggestionChip(
-                onClick = { viewModel.loadPreset("HttpBin Headers") },
-                label = { Text("Custom Headers", fontSize = 11.sp) }
-            )
+
+            val crudScrollState = rememberScrollState()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(crudScrollState),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // 1. READ (GET)
+                FilledTonalButton(
+                    onClick = { viewModel.runCrudAction("READ") },
+                    enabled = !uiState.isLoading,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = HttpMethod.GET.color.copy(alpha = 0.2f),
+                        contentColor = HttpMethod.GET.color
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text("📖 GET Baca #1", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+
+                // 2. CREATE (POST)
+                FilledTonalButton(
+                    onClick = { viewModel.runCrudAction("CREATE") },
+                    enabled = !uiState.isLoading,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = HttpMethod.POST.color.copy(alpha = 0.2f),
+                        contentColor = HttpMethod.POST.color
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text("➕ POST Create", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+
+                // 3. UPDATE (PUT)
+                FilledTonalButton(
+                    onClick = { viewModel.runCrudAction("UPDATE") },
+                    enabled = !uiState.isLoading,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = HttpMethod.PUT.color.copy(alpha = 0.2f),
+                        contentColor = HttpMethod.PUT.color
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text("✏️ PUT Update #1", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+
+                // 4. DELETE (DELETE)
+                FilledTonalButton(
+                    onClick = { viewModel.runCrudAction("DELETE") },
+                    enabled = !uiState.isLoading,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = HttpMethod.DELETE.color.copy(alpha = 0.2f),
+                        contentColor = HttpMethod.DELETE.color
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text("🗑️ DELETE Hapus #1", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+
+                // 5. LIST USERS (GET)
+                FilledTonalButton(
+                    onClick = { viewModel.runCrudAction("USERS") },
+                    enabled = !uiState.isLoading,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = Color(0xFF00B0FF).copy(alpha = 0.2f),
+                        contentColor = Color(0xFF00B0FF)
+                    ),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Text("👥 GET List Users", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
+            }
         }
 
         // Tabs: Headers vs Body

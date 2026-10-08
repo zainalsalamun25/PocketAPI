@@ -232,6 +232,86 @@ class PocketApiViewModel(
             }
         }
     }
+
+    fun runCrudAction(action: String) {
+        val targetUrl: String
+        val targetMethod: HttpMethod
+        val targetHeaders: List<HeaderItem>
+        val targetBody: String
+        val tab: Int
+
+        when (action) {
+            "CREATE" -> {
+                targetUrl = "https://jsonplaceholder.typicode.com/posts"
+                targetMethod = HttpMethod.POST
+                targetHeaders = listOf(
+                    HeaderItem(key = "Content-Type", value = "application/json"),
+                    HeaderItem(key = "Accept", value = "application/json")
+                )
+                targetBody = "{\n  \"title\": \"Postingan Baru\",\n  \"body\": \"Dibuat otomatis via 1-klik PocketAPI\",\n  \"userId\": 1\n}"
+                tab = 1
+            }
+            "UPDATE" -> {
+                targetUrl = "https://jsonplaceholder.typicode.com/posts/1"
+                targetMethod = HttpMethod.PUT
+                targetHeaders = listOf(
+                    HeaderItem(key = "Content-Type", value = "application/json"),
+                    HeaderItem(key = "Accept", value = "application/json")
+                )
+                targetBody = "{\n  \"id\": 1,\n  \"title\": \"Judul Berhasil Diupdate\",\n  \"body\": \"Data diperbarui via 1-klik PocketAPI\",\n  \"userId\": 1\n}"
+                tab = 1
+            }
+            "DELETE" -> {
+                targetUrl = "https://jsonplaceholder.typicode.com/posts/1"
+                targetMethod = HttpMethod.DELETE
+                targetHeaders = listOf(HeaderItem(key = "Accept", value = "application/json"))
+                targetBody = ""
+                tab = 0
+            }
+            "USERS" -> {
+                targetUrl = "https://jsonplaceholder.typicode.com/users"
+                targetMethod = HttpMethod.GET
+                targetHeaders = listOf(HeaderItem(key = "Accept", value = "application/json"))
+                targetBody = ""
+                tab = 0
+            }
+            else -> { // READ
+                targetUrl = "https://jsonplaceholder.typicode.com/posts/1"
+                targetMethod = HttpMethod.GET
+                targetHeaders = listOf(HeaderItem(key = "Accept", value = "application/json"))
+                targetBody = ""
+                tab = 0
+            }
+        }
+
+        _uiState.update {
+            it.copy(
+                url = targetUrl,
+                method = targetMethod,
+                headers = targetHeaders,
+                requestBody = targetBody,
+                selectedRequestTab = tab,
+                isLoading = true,
+                response = null
+            )
+        }
+
+        viewModelScope.launch {
+            val request = ApiRequest(
+                url = targetUrl,
+                method = targetMethod,
+                headers = targetHeaders,
+                body = targetBody
+            )
+            val apiResponse = repository.executeAndSave(request)
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    response = apiResponse
+                )
+            }
+        }
+    }
 }
 
 class PocketApiViewModelFactory(
