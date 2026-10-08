@@ -18,7 +18,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.ui.platform.LocalContext
 import com.example.pocketapi.data.model.HttpMethod
+import com.example.pocketapi.ui.components.ImportCurlDialog
 import com.example.pocketapi.ui.components.KeyValueEditor
 import com.example.pocketapi.ui.components.MethodBadge
 import com.example.pocketapi.ui.theme.DarkBorder
@@ -34,7 +42,9 @@ fun RequestSection(
     viewModel: PocketApiViewModel,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var methodMenuExpanded by remember { mutableStateOf(false) }
+    var showImportCurlDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -125,6 +135,42 @@ fun RequestSection(
                     Text("Send", fontSize = 13.sp)
                 }
             }
+        }
+
+        // Row 2: cURL Tools & Actions
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            AssistChip(
+                onClick = { showImportCurlDialog = true },
+                label = { Text("Import cURL", fontSize = 11.sp) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.FileDownload,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            )
+
+            AssistChip(
+                onClick = {
+                    val curl = viewModel.generateCurlCommand()
+                    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("PocketAPI cURL", curl)
+                    clipboard.setPrimaryClip(clip)
+                    Toast.makeText(context, "Perintah cURL disalin ke clipboard!", Toast.LENGTH_SHORT).show()
+                },
+                label = { Text("Copy as cURL", fontSize = 11.sp) },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.ContentCopy,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            )
         }
 
         // Quick Presets Row
@@ -226,5 +272,18 @@ fun RequestSection(
                 }
             }
         }
+    }
+
+    if (showImportCurlDialog) {
+        ImportCurlDialog(
+            onDismiss = { showImportCurlDialog = false },
+            onImport = { curlString ->
+                val result = viewModel.importCurl(curlString)
+                if (result.isSuccess) {
+                    Toast.makeText(context, "cURL berhasil diimpor!", Toast.LENGTH_SHORT).show()
+                }
+                result
+            }
+        )
     }
 }

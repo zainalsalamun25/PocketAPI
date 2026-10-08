@@ -1,4 +1,4 @@
-﻿package com.example.pocketapi.ui.viewmodel
+package com.example.pocketapi.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -9,6 +9,8 @@ import com.example.pocketapi.data.model.ApiResponse
 import com.example.pocketapi.data.model.HeaderItem
 import com.example.pocketapi.data.model.HttpMethod
 import com.example.pocketapi.data.repository.ApiRepository
+import com.example.pocketapi.util.CurlGenerator
+import com.example.pocketapi.util.CurlParser
 import com.example.pocketapi.util.JsonFormatter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -95,6 +97,35 @@ class PocketApiViewModel(
         val currentBody = _uiState.value.requestBody
         val pretty = JsonFormatter.prettyPrint(currentBody)
         _uiState.update { it.copy(requestBody = pretty) }
+    }
+
+    fun importCurl(rawCurl: String): Result<Unit> {
+        return try {
+            val parsed = CurlParser.parse(rawCurl)
+            _uiState.update {
+                it.copy(
+                    url = parsed.url,
+                    method = parsed.method,
+                    headers = parsed.headers,
+                    requestBody = parsed.body,
+                    selectedRequestTab = if (parsed.body.isNotBlank()) 1 else 0
+                )
+            }
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    fun generateCurlCommand(multiline: Boolean = true): String {
+        val state = _uiState.value
+        val request = ApiRequest(
+            url = state.url,
+            method = state.method,
+            headers = state.headers,
+            body = if (state.method in listOf(HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH)) state.requestBody else ""
+        )
+        return CurlGenerator.generate(request, multiline)
     }
 
     fun sendRequest() {

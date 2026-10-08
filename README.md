@@ -1,4 +1,4 @@
-﻿# 🚀 PocketAPI - Mobile REST API Client
+# 🚀 PocketAPI - Mobile REST API Client
 
 PocketAPI adalah aplikasi Android open-source yang berfungsi sebagai **REST API Client ringan (Mini Postman)** langsung dari smartphone Anda. Dibuat dengan **Kotlin Modern**, **Jetpack Compose (Material 3)**, **OkHttp 4**, dan **Room Database** dengan arsitektur **MVVM (Model-View-ViewModel)**.
 
@@ -13,6 +13,9 @@ PocketAPI adalah aplikasi Android open-source yang berfungsi sebagai **REST API 
   * **JSON Body Editor**: Editor request body untuk method POST/PUT dengan tombol **"Format JSON"** (Pretty Print).
 * **Preset Endpoint Bawaan**:
   * 1-tap testing menggunakan endpoint publik gratis (JSONPlaceholder, HttpBin).
+* **cURL Import & Export**:
+  * **Import cURL**: Tempel perintah cURL dari browser/Postman dan otomatis parsing ke URL, Method, Headers, dan Body.
+  * **Copy as cURL**: Salin request aktif ke clipboard sebagai perintah terminal cURL yang valid.
 * **Real-time Response Inspector**:
   * Status Code badge dengan indikator warna standar HTTP (2xx Hijau, 4xx Oranye, 5xx Merah).
   * Metrik performa: **Response Time (ms)** dan **Payload Size (KB/B)**.
