@@ -1,0 +1,6 @@
+﻿<resources>
+    <style name="Theme.PocketAPI" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">#1E1E2E</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
