@@ -1,10 +1,12 @@
-﻿package com.example.pocketapi.ui.screens
+package com.example.pocketapi.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -14,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pocketapi.ui.components.JsonCodeViewer
+import com.example.pocketapi.ui.components.JwtInspectorDialog
 import com.example.pocketapi.ui.components.StatusCodeBadge
 import com.example.pocketapi.ui.theme.DarkBorder
 import com.example.pocketapi.ui.theme.DarkSurface
@@ -22,6 +25,7 @@ import com.example.pocketapi.ui.theme.StatusError
 import com.example.pocketapi.ui.viewmodel.PocketApiUiState
 import com.example.pocketapi.ui.viewmodel.PocketApiViewModel
 import com.example.pocketapi.util.JsonFormatter
+import com.example.pocketapi.util.JwtDecoder
 
 @Composable
 fun ResponseSection(
@@ -30,6 +34,8 @@ fun ResponseSection(
     modifier: Modifier = Modifier
 ) {
     val response = uiState.response
+    var showJwtDialog by remember { mutableStateOf(false) }
+    val detectedJwt = remember(response?.body) { response?.body?.let { JwtDecoder.findJwtInText(it) } }
 
     Column(
         modifier = modifier
@@ -125,6 +131,49 @@ fun ResponseSection(
                 }
             }
 
+            // Detected JWT Banner if response contains a JWT
+            if (detectedJwt != null) {
+                Surface(
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "Token JWT terdeteksi dalam respon",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        FilledTonalButton(
+                            onClick = { showJwtDialog = true },
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                            shape = RoundedCornerShape(6.dp)
+                        ) {
+                            Text("Inspect JWT", fontSize = 11.sp)
+                        }
+                    }
+                }
+            }
+
             // Tabs for Response: Body / Headers / Raw
             val respTabs = listOf("Formatted Body", "Headers (${response.headers.size})", "Raw")
             TabRow(
@@ -198,5 +247,12 @@ fun ResponseSection(
                 }
             }
         }
+    }
+
+    if (showJwtDialog && detectedJwt != null) {
+        JwtInspectorDialog(
+            jwtToken = detectedJwt,
+            onDismiss = { showJwtDialog = false }
+        )
     }
 }

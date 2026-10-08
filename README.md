@@ -21,6 +21,8 @@ PocketAPI adalah aplikasi Android open-source yang berfungsi sebagai **REST API 
   * Status Code badge dengan indikator warna standar HTTP (2xx Hijau, 4xx Oranye, 5xx Merah).
   * Metrik performa: **Response Time (ms)** dan **Payload Size (KB/B)**.
   * Tab navigasi respon: **Formatted Body**, **Response Headers**, dan **Raw Body**.
+  * **Pencarian (Search & Highlight)**: Search bar terintegrasi dengan penanda warna kuning dan penghitung kata yang cocok.
+  * **In-App JWT Inspector**: Deteksi otomatis token JWT di Bearer Auth dan Response dengan analisis klaim payload dan countdown kedaluwarsa.
   * Tombol **Salin ke Clipboard** 1-tap.
 * **Offline History & Favorites (Room DB)**:
   * Setiap request yang dijalankan otomatis tersimpan di database lokal.

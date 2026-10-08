@@ -1,4 +1,4 @@
-﻿package com.example.pocketapi.ui.components
+package com.example.pocketapi.ui.components
 
 import android.content.ClipboardManager
 import android.content.Context
@@ -31,6 +31,7 @@ import com.example.pocketapi.data.model.AuthConfig
 import com.example.pocketapi.data.model.AuthType
 import com.example.pocketapi.ui.theme.DarkBorder
 import com.example.pocketapi.ui.theme.DarkSurfaceElevated
+import com.example.pocketapi.util.JwtDecoder
 
 @Composable
 fun AuthSection(
@@ -40,6 +41,7 @@ fun AuthSection(
 ) {
     val context = LocalContext.current
     var passwordVisible by remember { mutableStateOf(false) }
+    var showJwtInspector by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -138,11 +140,29 @@ fun AuthSection(
                         shape = RoundedCornerShape(8.dp)
                     )
 
-                    Text(
-                        text = "Header 'Authorization: Bearer <token>' akan otomatis disuntikkan ke request.",
-                        fontSize = 11.sp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Header 'Authorization: Bearer <token>' aktif.",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        if (JwtDecoder.isJwt(authConfig.bearerToken)) {
+                            FilledTonalButton(
+                                onClick = { showJwtInspector = true },
+                                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Icon(Icons.Default.Visibility, contentDescription = null, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Inspect Token", fontSize = 11.sp)
+                            }
+                        }
+                    }
                 }
             }
 
@@ -260,5 +280,12 @@ fun AuthSection(
                 }
             }
         }
+    }
+
+    if (showJwtInspector && authConfig.bearerToken.isNotBlank()) {
+        JwtInspectorDialog(
+            jwtToken = authConfig.bearerToken,
+            onDismiss = { showJwtInspector = false }
+        )
     }
 }
