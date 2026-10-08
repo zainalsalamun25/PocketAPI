@@ -13,6 +13,6 @@ class PocketApiApp : Application() {
         super.onCreate()
         val database = AppDatabase.getDatabase(this)
         val httpEngine = HttpEngine()
-        repository = ApiRepository(httpEngine, database.requestHistoryDao())
+        repository = ApiRepository(httpEngine, database.requestHistoryDao(), database.savedRequestDao())
     }
 }

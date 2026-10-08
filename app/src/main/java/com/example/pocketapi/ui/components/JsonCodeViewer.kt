@@ -1,4 +1,4 @@
-﻿package com.example.pocketapi.ui.components
+package com.example.pocketapi.ui.components
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -115,9 +115,7 @@ fun JsonCodeViewer(
                     onValueChange = { searchQuery = it },
                     placeholder = { Text("Cari di JSON...", fontSize = 11.sp, color = Color.Gray) },
                     singleLine = true,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(38.dp),
+                    modifier = Modifier.weight(1f),
                     textStyle = LocalTextStyle.current.copy(fontSize = 11.sp),
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
@@ -135,8 +133,7 @@ fun JsonCodeViewer(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = DarkBorder
                     ),
-                    shape = RoundedCornerShape(6.dp),
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+                    shape = RoundedCornerShape(6.dp)
                 )
 
                 if (searchQuery.isNotBlank()) {

@@ -1,4 +1,4 @@
-﻿package com.example.pocketapi.util
+package com.example.pocketapi.util
 
 import android.util.Base64
 import org.json.JSONObject
@@ -54,7 +54,7 @@ object JwtDecoder {
             var algorithm: String? = null
             try {
                 val headerObj = JSONObject(headerString)
-                algorithm = headerObj.optString("alg", null)
+                if (headerObj.has("alg")) algorithm = headerObj.optString("alg")
             } catch (_: Exception) {}
 
             var subject: String? = null

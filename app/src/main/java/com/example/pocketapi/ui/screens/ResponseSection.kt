@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.pocketapi.ui.components.HttpStatusDetailBottomSheet
 import com.example.pocketapi.ui.components.JsonCodeViewer
 import com.example.pocketapi.ui.components.JwtInspectorDialog
 import com.example.pocketapi.ui.components.StatusCodeBadge
@@ -35,6 +36,7 @@ fun ResponseSection(
 ) {
     val response = uiState.response
     var showJwtDialog by remember { mutableStateOf(false) }
+    var showStatusDetailSheet by remember { mutableStateOf(false) }
     val detectedJwt = remember(response?.body) { response?.body?.let { JwtDecoder.findJwtInText(it) } }
 
     Column(
@@ -63,7 +65,8 @@ fun ResponseSection(
                 ) {
                     StatusCodeBadge(
                         statusCode = response.statusCode,
-                        statusMessage = response.statusMessage
+                        statusMessage = response.statusMessage,
+                        onClick = { showStatusDetailSheet = true }
                     )
                     Text(
                         text = "${response.responseTimeMs} ms",
@@ -253,6 +256,14 @@ fun ResponseSection(
         JwtInspectorDialog(
             jwtToken = detectedJwt,
             onDismiss = { showJwtDialog = false }
+        )
+    }
+
+    if (showStatusDetailSheet && response != null) {
+        HttpStatusDetailBottomSheet(
+            statusCode = response.statusCode,
+            statusMessage = response.statusMessage,
+            onDismiss = { showStatusDetailSheet = false }
         )
     }
 }

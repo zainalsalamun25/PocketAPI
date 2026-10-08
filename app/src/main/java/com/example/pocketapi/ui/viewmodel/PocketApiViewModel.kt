@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.pocketapi.data.local.RequestHistoryEntity
+import com.example.pocketapi.data.local.SavedRequestEntity
 import com.example.pocketapi.data.model.ApiRequest
 import com.example.pocketapi.data.model.ApiResponse
 import com.example.pocketapi.data.model.AuthConfig
@@ -43,6 +44,20 @@ class PocketApiViewModel(
     val uiState: StateFlow<PocketApiUiState> = _uiState.asStateFlow()
 
     val historyList: StateFlow<List<RequestHistoryEntity>> = repository.allHistory
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val savedRequestsList: StateFlow<List<SavedRequestEntity>> = repository.allSavedRequests
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val foldersList: StateFlow<List<String>> = repository.allFolders
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -189,6 +204,46 @@ class PocketApiViewModel(
     fun toggleFavorite(id: Long, currentStatus: Boolean) {
         viewModelScope.launch {
             repository.toggleFavorite(id, currentStatus)
+        }
+    }
+
+    fun saveCurrentRequest(name: String, folderName: String) {
+        val state = _uiState.value
+        viewModelScope.launch {
+            val request = ApiRequest(
+                url = state.url,
+                method = state.method,
+                headers = state.headers,
+                body = if (state.method in listOf(HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH)) state.requestBody else ""
+            )
+            repository.saveRequest(name, folderName, request, state.authConfig)
+        }
+    }
+
+    fun deleteSavedRequest(id: Long) {
+        viewModelScope.launch {
+            repository.deleteSavedRequest(id)
+        }
+    }
+
+    fun deleteSavedFolder(folder: String) {
+        viewModelScope.launch {
+            repository.deleteSavedFolder(folder)
+        }
+    }
+
+    fun loadSavedRequest(saved: SavedRequestEntity) {
+        val headers = repository.parseHeaders(saved.headersJson)
+        val auth = repository.parseAuthConfig(saved.authJson)
+        _uiState.update {
+            it.copy(
+                url = saved.url,
+                method = HttpMethod.fromString(saved.method),
+                headers = if (headers.isNotEmpty()) headers else listOf(HeaderItem(key = "Accept", value = "application/json")),
+                authConfig = auth,
+                requestBody = saved.requestBody,
+                selectedRequestTab = if (saved.requestBody.isNotBlank()) 1 else 0
+            )
         }
     }
 

@@ -24,6 +24,16 @@ PocketAPI adalah aplikasi Android open-source yang berfungsi sebagai **REST API 
   * **Pencarian (Search & Highlight)**: Search bar terintegrasi dengan penanda warna kuning dan penghitung kata yang cocok.
   * **In-App JWT Inspector**: Deteksi otomatis token JWT di Bearer Auth dan Response dengan analisis klaim payload dan countdown kedaluwarsa.
   * Tombol **Salin ke Clipboard** 1-tap.
+* **Collections & Folder Organization**:
+  * **Simpan Request**: Simpan request aktif ke dalam koleksi lokal dengan nama kustom dan kategori folder.
+  * **Filter & Pencarian**: Filter cepat berdasarkan folder/koleksi dan pencarian judul/URL secara instan.
+  * **1-Tap Load**: Muat konfigurasi request (URL, Method, Header, Auth, dan Body) langsung ke layar kerja editor.
+  * **Manajemen Koleksi**: Hapus request satuan atau hapus seluruh folder secara aman dengan konfirmasi dialog.
+* **Interactive HTTP Status Code Explainer**:
+  * Klik langsung pada badge status code respons (`200 OK`, `401 Unauthorized`, `404 Not Found`, `500 Internal Server Error`, dll.).
+  * **Definisi Standar RFC**: Rangkuman resmi spesifikasi HTTP (RFC 9110 / RFC 6585).
+  * **Analisis Dua Sisi**: Membedakan akar masalah di sisi Klien (*Frontend / Device*) vs sisi Server (*Backend / Gateway*).
+  * **Checklist Solusi & Debugging**: Langkah konkret untuk memecahkan kendala error dengan tombol salin ringkasan ke clipboard.
 * **Offline History & Favorites (Room DB)**:
   * Setiap request yang dijalankan otomatis tersimpan di database lokal.
   * Klik item riwayat untuk memuat ulang konfigurasi request ke layar editor.
