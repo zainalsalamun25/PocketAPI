@@ -6,8 +6,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoFixHigh
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -174,17 +180,28 @@ fun RequestSection(
             )
         }
 
-        // ⚡ One-Click Automatic CRUD Actions (JSONPlaceholder)
+        // One-Click Automatic CRUD Actions (JSONPlaceholder)
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Text(
-                text = "⚡ Otomatis Jalankan (1-Klik):",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Bolt,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "Otomatis Jalankan (1-Klik):",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
 
             val crudScrollState = rememberScrollState()
             Row(
@@ -204,7 +221,9 @@ fun RequestSection(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Text("📖 GET Baca #1", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.MenuBook, contentDescription = null, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("GET Baca #1", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 // 2. CREATE (POST)
@@ -218,7 +237,9 @@ fun RequestSection(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Text("➕ POST Create", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("POST Create", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 // 3. UPDATE (PUT)
@@ -232,7 +253,9 @@ fun RequestSection(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Text("✏️ PUT Update #1", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("PUT Update #1", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 // 4. DELETE (DELETE)
@@ -246,7 +269,9 @@ fun RequestSection(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Text("🗑️ DELETE Hapus #1", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("DELETE Hapus #1", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
 
                 // 5. LIST USERS (GET)
@@ -260,7 +285,9 @@ fun RequestSection(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Text("👥 GET List Users", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Group, contentDescription = null, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("GET List Users", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
