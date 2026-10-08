@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.pocketapi.data.local.RequestHistoryEntity
 import com.example.pocketapi.data.model.ApiRequest
 import com.example.pocketapi.data.model.ApiResponse
+import com.example.pocketapi.data.model.AuthConfig
 import com.example.pocketapi.data.model.HeaderItem
 import com.example.pocketapi.data.model.HttpMethod
 import com.example.pocketapi.data.repository.ApiRepository
@@ -26,6 +27,7 @@ data class PocketApiUiState(
     val headers: List<HeaderItem> = listOf(
         HeaderItem(key = "Accept", value = "application/json", isEnabled = true)
     ),
+    val authConfig: AuthConfig = AuthConfig(),
     val requestBody: String = "{\n  \"title\": \"foo\",\n  \"body\": \"bar\",\n  \"userId\": 1\n}",
     val isLoading: Boolean = false,
     val response: ApiResponse? = null,
@@ -117,12 +119,18 @@ class PocketApiViewModel(
         }
     }
 
+    fun setAuthConfig(authConfig: AuthConfig) {
+        _uiState.update { it.copy(authConfig = authConfig) }
+    }
+
     fun generateCurlCommand(multiline: Boolean = true): String {
         val state = _uiState.value
+        val effectiveUrl = state.authConfig.resolveUrl(state.url)
+        val effectiveHeaders = state.headers + state.authConfig.resolveHeaders()
         val request = ApiRequest(
-            url = state.url,
+            url = effectiveUrl,
             method = state.method,
-            headers = state.headers,
+            headers = effectiveHeaders,
             body = if (state.method in listOf(HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH)) state.requestBody else ""
         )
         return CurlGenerator.generate(request, multiline)
@@ -135,10 +143,12 @@ class PocketApiViewModel(
         _uiState.update { it.copy(isLoading = true, response = null) }
 
         viewModelScope.launch {
+            val effectiveUrl = state.authConfig.resolveUrl(state.url)
+            val effectiveHeaders = state.headers + state.authConfig.resolveHeaders()
             val request = ApiRequest(
-                url = state.url,
+                url = effectiveUrl,
                 method = state.method,
-                headers = state.headers,
+                headers = effectiveHeaders,
                 body = if (state.method in listOf(HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH)) state.requestBody else ""
             )
 

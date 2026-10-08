@@ -10,6 +10,7 @@ PocketAPI adalah aplikasi Android open-source yang berfungsi sebagai **REST API 
   * Mendukung HTTP Method: `GET`, `POST`, `PUT`, `DELETE`, `PATCH`, `HEAD`.
   * Input URL fleksibel dengan fitur paste dan auto-prefix `https://`.
   * **Headers Editor**: Menambah, mengubah, menonaktifkan, atau menghapus custom header (*Key-Value*).
+  * **Dedicated Auth Tab**: Dukungan autentikasi otomatis (*No Auth*, *Bearer Token / JWT*, *Basic Auth Base64*, dan *API Key Header / Query Param*).
   * **JSON Body Editor**: Editor request body untuk method POST/PUT dengan tombol **"Format JSON"** (Pretty Print).
 * **Preset Endpoint Bawaan**:
   * 1-tap testing menggunakan endpoint publik gratis (JSONPlaceholder, HttpBin).

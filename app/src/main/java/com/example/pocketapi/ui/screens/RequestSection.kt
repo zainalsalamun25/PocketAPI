@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.ui.platform.LocalContext
 import com.example.pocketapi.data.model.HttpMethod
+import com.example.pocketapi.ui.components.AuthSection
 import com.example.pocketapi.ui.components.ImportCurlDialog
 import com.example.pocketapi.ui.components.KeyValueEditor
 import com.example.pocketapi.ui.components.MethodBadge
@@ -292,8 +293,9 @@ fun RequestSection(
             }
         }
 
-        // Tabs: Headers vs Body
-        val tabs = listOf("Headers (${uiState.headers.count { it.isEnabled }})", "Body (JSON)")
+        // Tabs: Headers vs Body vs Auth
+        val authLabel = if (uiState.authConfig.type.name != "NONE") "Auth (${uiState.authConfig.type.label})" else "Auth"
+        val tabs = listOf("Headers (${uiState.headers.count { it.isEnabled }})", "Body (JSON)", authLabel)
         TabRow(
             selectedTabIndex = uiState.selectedRequestTab,
             containerColor = DarkSurfaceElevated,
@@ -304,7 +306,7 @@ fun RequestSection(
                 Tab(
                     selected = uiState.selectedRequestTab == index,
                     onClick = { viewModel.setRequestTab(index) },
-                    text = { Text(title, fontSize = 13.sp) }
+                    text = { Text(title, fontSize = 12.sp) }
                 )
             }
         }
@@ -362,6 +364,13 @@ fun RequestSection(
                         shape = RoundedCornerShape(8.dp)
                     )
                 }
+            }
+            2 -> {
+                // Auth Editor
+                AuthSection(
+                    authConfig = uiState.authConfig,
+                    onAuthConfigChange = { viewModel.setAuthConfig(it) }
+                )
             }
         }
     }
