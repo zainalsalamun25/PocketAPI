@@ -1,6 +1,9 @@
 package com.example.pocketapi.ui.screens
 
-import androidx.compose.foundation.background
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -10,7 +13,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.PlayArrow
@@ -21,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -28,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pocketapi.data.local.SavedRequestEntity
 import com.example.pocketapi.data.model.HttpMethod
+import com.example.pocketapi.ui.components.ImportPostmanDialog
 import com.example.pocketapi.ui.components.MethodBadge
 import com.example.pocketapi.ui.theme.DarkBorder
 import com.example.pocketapi.ui.theme.DarkSurface
@@ -44,10 +51,12 @@ fun CollectionsBottomSheet(
     onSelectSaved: (SavedRequestEntity) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     var searchQuery by remember { mutableStateOf("") }
     var selectedFolder by remember { mutableStateOf<String?>(null) }
     var requestToDelete by remember { mutableStateOf<SavedRequestEntity?>(null) }
     var folderToDelete by remember { mutableStateOf<String?>(null) }
+    var showImportPostmanDialog by remember { mutableStateOf(false) }
 
     val filteredList = remember(savedRequests, searchQuery, selectedFolder) {
         savedRequests.filter { request ->
@@ -103,6 +112,38 @@ fun CollectionsBottomSheet(
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Hapus Folder", fontSize = 12.sp)
                     }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Postman Import/Export Action Chips
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                AssistChip(
+                    onClick = { showImportPostmanDialog = true },
+                    label = { Text("Import Postman JSON", fontSize = 11.sp) },
+                    leadingIcon = {
+                        Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(14.dp))
+                    }
+                )
+
+                if (savedRequests.isNotEmpty()) {
+                    AssistChip(
+                        onClick = {
+                            val json = viewModel.exportPostmanCollection()
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            val clip = ClipData.newPlainText("Postman Collection v2.1", json)
+                            clipboard.setPrimaryClip(clip)
+                            Toast.makeText(context, "Postman Collection v2.1 disalin ke clipboard!", Toast.LENGTH_SHORT).show()
+                        },
+                        label = { Text("Export Postman JSON", fontSize = 11.sp) },
+                        leadingIcon = {
+                            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(14.dp))
+                        }
+                    )
                 }
             }
 
@@ -196,7 +237,7 @@ fun CollectionsBottomSheet(
                             color = Color.Gray
                         )
                         Text(
-                            text = "Gunakan ikon bookmark di bilah atas untuk menyimpan request.",
+                            text = "Gunakan tombol 'Import Postman JSON' di atas atau bookmark request.",
                             fontSize = 11.sp,
                             color = Color.DarkGray
                         )
@@ -237,6 +278,22 @@ fun CollectionsBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+
+    if (showImportPostmanDialog) {
+        ImportPostmanDialog(
+            onDismiss = { showImportPostmanDialog = false },
+            onImport = { jsonString ->
+                val result = viewModel.importPostmanCollection(jsonString)
+                result.fold(
+                    onSuccess = { count ->
+                        Toast.makeText(context, "Berhasil mengimpor $count request!", Toast.LENGTH_SHORT).show()
+                    },
+                    onFailure = {}
+                )
+                result
+            }
+        )
     }
 
     // Delete Request Confirmation Dialog
