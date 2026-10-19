@@ -1,8 +1,8 @@
 package com.example.pocketapi.util
 
-import android.util.Base64
-import org.json.JSONObject
+import com.google.gson.JsonParser
 import java.text.SimpleDateFormat
+import java.util.Base64
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -53,8 +53,8 @@ object JwtDecoder {
 
             var algorithm: String? = null
             try {
-                val headerObj = JSONObject(headerString)
-                if (headerObj.has("alg")) algorithm = headerObj.optString("alg")
+                val headerObj = JsonParser.parseString(headerString).asJsonObject
+                if (headerObj.has("alg")) algorithm = headerObj.get("alg").asString
             } catch (_: Exception) {}
 
             var subject: String? = null
@@ -65,13 +65,13 @@ object JwtDecoder {
             var expiryDescription = "Tidak ada tanggal kedaluwarsa (exp claim tidak ditemukan)"
 
             try {
-                val payloadObj = JSONObject(payloadString)
-                if (payloadObj.has("sub")) subject = payloadObj.optString("sub")
-                if (payloadObj.has("iss")) issuer = payloadObj.optString("iss")
-                if (payloadObj.has("iat")) issuedAt = payloadObj.optLong("iat") * 1000L
+                val payloadObj = JsonParser.parseString(payloadString).asJsonObject
+                if (payloadObj.has("sub")) subject = payloadObj.get("sub").asString
+                if (payloadObj.has("iss")) issuer = payloadObj.get("iss").asString
+                if (payloadObj.has("iat")) issuedAt = payloadObj.get("iat").asLong * 1000L
 
                 if (payloadObj.has("exp")) {
-                    val expEpochSec = payloadObj.optLong("exp")
+                    val expEpochSec = payloadObj.get("exp").asLong
                     val expMillis = expEpochSec * 1000L
                     expiresAt = expMillis
                     val now = System.currentTimeMillis()
@@ -126,7 +126,13 @@ object JwtDecoder {
     }
 
     private fun decodeBase64Url(base64Url: String): String {
-        val decodedBytes = Base64.decode(base64Url, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+        val clean = base64Url.replace('-', '+').replace('_', '/')
+        val pad = when (clean.length % 4) {
+            2 -> "=="
+            3 -> "="
+            else -> ""
+        }
+        val decodedBytes = Base64.getDecoder().decode(clean + pad)
         return String(decodedBytes, Charsets.UTF_8)
     }
 }
