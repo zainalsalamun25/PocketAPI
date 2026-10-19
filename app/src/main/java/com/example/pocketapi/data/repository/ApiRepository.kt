@@ -28,8 +28,8 @@ class ApiRepository(
     val allSavedRequests: Flow<List<SavedRequestEntity>> = savedRequestDao.getAllSavedRequests()
     val allFolders: Flow<List<String>> = savedRequestDao.getAllFolders()
 
-    suspend fun executeAndSave(request: ApiRequest): ApiResponse {
-        val response = httpEngine.executeRequest(request)
+    suspend fun executeAndSave(request: ApiRequest, bypassSsl: Boolean = false): ApiResponse {
+        val response = httpEngine.executeRequest(request, bypassSsl)
 
         val headersJson = gson.toJson(request.headers.filter { it.isEnabled && it.key.isNotBlank() })
         val historyEntry = RequestHistoryEntity(

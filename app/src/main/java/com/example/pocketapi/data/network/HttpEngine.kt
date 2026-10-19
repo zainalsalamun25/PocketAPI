@@ -5,6 +5,7 @@ import com.example.pocketapi.data.model.ApiResponse
 import com.example.pocketapi.data.model.HttpMethod
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -13,19 +14,46 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
 class HttpEngine {
 
-    private val client: OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .writeTimeout(15, TimeUnit.SECONDS)
-        .followRedirects(true)
-        .build()
+    private val standardClient: OkHttpClient = buildClient(bypassSsl = false)
+    private val unsafeClient: OkHttpClient = buildClient(bypassSsl = true)
 
-    suspend fun executeRequest(apiRequest: ApiRequest): ApiResponse = withContext(Dispatchers.IO) {
+    private fun buildClient(bypassSsl: Boolean): OkHttpClient {
+        val builder = OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .followRedirects(true)
+
+        if (bypassSsl) {
+            try {
+                val trustAllCerts = arrayOf<TrustManager>(
+                    object : X509TrustManager {
+                        override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+                        override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+                        override fun getAcceptedIssuers(): Array<X509Certificate> = emptyArray()
+                    }
+                )
+                val sslContext = SSLContext.getInstance("SSL")
+                sslContext.init(null, trustAllCerts, SecureRandom())
+                builder.sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
+                builder.hostnameVerifier { _, _ -> true }
+            } catch (_: Exception) {}
+        }
+
+        return builder.build()
+    }
+
+    suspend fun executeRequest(apiRequest: ApiRequest, bypassSsl: Boolean = false): ApiResponse = withContext(Dispatchers.IO) {
         val startTime = System.currentTimeMillis()
         var sanitizedUrl = apiRequest.url.trim()
 
@@ -33,6 +61,17 @@ class HttpEngine {
             !sanitizedUrl.startsWith("https://", ignoreCase = true)
         ) {
             sanitizedUrl = "https://$sanitizedUrl"
+        }
+
+        val httpUrl = sanitizedUrl.toHttpUrlOrNull()
+        if (httpUrl != null) {
+            val urlBuilder = httpUrl.newBuilder()
+            for (param in apiRequest.queryParams) {
+                if (param.isEnabled && param.key.isNotBlank()) {
+                    urlBuilder.addQueryParameter(param.key.trim(), param.value)
+                }
+            }
+            sanitizedUrl = urlBuilder.build().toString()
         }
 
         try {
@@ -74,7 +113,9 @@ class HttpEngine {
             }
 
             val request = requestBuilder.build()
-            client.newCall(request).execute().use { response ->
+            val activeClient = if (bypassSsl) unsafeClient else standardClient
+
+            activeClient.newCall(request).execute().use { response ->
                 val endTime = System.currentTimeMillis()
                 val responseTimeMs = endTime - startTime
 
@@ -129,7 +170,7 @@ class HttpEngine {
                 responseTimeMs = elapsed,
                 body = "",
                 isSuccess = false,
-                errorMessage = "Sertifikat SSL bermasalah atau HTTPS tidak valid: ${e.localizedMessage}"
+                errorMessage = "Sertifikat SSL bermasalah atau HTTPS tidak valid: ${e.localizedMessage}. Tip: Aktifkan 'Bypass SSL' di opsi jika menggunakan server lokal/self-signed cert."
             )
         } catch (e: IOException) {
             val elapsed = System.currentTimeMillis() - startTime
