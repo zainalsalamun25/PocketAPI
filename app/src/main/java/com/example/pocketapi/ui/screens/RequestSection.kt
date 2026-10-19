@@ -105,7 +105,7 @@ fun RequestSection(
             OutlinedTextField(
                 value = uiState.url,
                 onValueChange = { viewModel.setUrl(it) },
-                placeholder = { Text("https://api.example.com", fontSize = 13.sp) },
+                placeholder = { Text("https://api.example.com/posts/{{postId}}", fontSize = 13.sp) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
                 trailingIcon = {
@@ -178,6 +178,16 @@ fun RequestSection(
                         modifier = Modifier.size(14.dp)
                     )
                 }
+            )
+
+            FilterChip(
+                selected = uiState.bypassSsl,
+                onClick = { viewModel.setBypassSsl(!uiState.bypassSsl) },
+                label = { Text(if (uiState.bypassSsl) "SSL: Unsafe" else "SSL: Strict", fontSize = 11.sp) },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = Color(0xFFFFB74D).copy(alpha = 0.2f),
+                    selectedLabelColor = Color(0xFFFFB74D)
+                )
             )
         }
 
@@ -293,13 +303,22 @@ fun RequestSection(
             }
         }
 
-        // Tabs: Headers vs Body vs Auth
+        // Tabs: Params vs Headers vs Body vs Auth
+        val activeParamsCount = uiState.queryParams.count { it.isEnabled }
+        val activeHeadersCount = uiState.headers.count { it.isEnabled }
         val authLabel = if (uiState.authConfig.type.name != "NONE") "Auth (${uiState.authConfig.type.label})" else "Auth"
-        val tabs = listOf("Headers (${uiState.headers.count { it.isEnabled }})", "Body (JSON)", authLabel)
-        TabRow(
+        val tabs = listOf(
+            if (activeParamsCount > 0) "Params ($activeParamsCount)" else "Params",
+            if (activeHeadersCount > 0) "Headers ($activeHeadersCount)" else "Headers",
+            "Body",
+            authLabel
+        )
+
+        ScrollableTabRow(
             selectedTabIndex = uiState.selectedRequestTab,
             containerColor = DarkSurfaceElevated,
             contentColor = MaterialTheme.colorScheme.primary,
+            edgePadding = 0.dp,
             modifier = Modifier.clip(RoundedCornerShape(8.dp))
         ) {
             tabs.forEachIndexed { index, title ->
@@ -313,6 +332,15 @@ fun RequestSection(
 
         when (uiState.selectedRequestTab) {
             0 -> {
+                // Query Params Editor
+                KeyValueEditor(
+                    items = uiState.queryParams,
+                    onItemChange = { idx, item -> viewModel.updateQueryParam(idx, item) },
+                    onItemRemove = { idx -> viewModel.removeQueryParam(idx) },
+                    onItemAdd = { viewModel.addQueryParam() }
+                )
+            }
+            1 -> {
                 // Headers Editor
                 KeyValueEditor(
                     items = uiState.headers,
@@ -321,7 +349,7 @@ fun RequestSection(
                     onItemAdd = { viewModel.addHeader() }
                 )
             }
-            1 -> {
+            2 -> {
                 // Request Body Editor
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(
@@ -365,7 +393,7 @@ fun RequestSection(
                     )
                 }
             }
-            2 -> {
+            3 -> {
                 // Auth Editor
                 AuthSection(
                     authConfig = uiState.authConfig,
