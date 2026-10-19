@@ -3,6 +3,7 @@
 data class ApiRequest(
     val url: String = "https://jsonplaceholder.typicode.com/posts/1",
     val method: HttpMethod = HttpMethod.GET,
+    val queryParams: List<QueryParamItem> = emptyList(),
     val headers: List<HeaderItem> = emptyList(),
     val body: String = ""
 )

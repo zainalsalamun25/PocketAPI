@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.pocketapi.data.model.HeaderItem
+import com.example.pocketapi.data.model.QueryParamItem
 import com.example.pocketapi.ui.theme.DarkBorder
 import com.example.pocketapi.ui.theme.DarkSurfaceElevated
 
@@ -23,13 +24,73 @@ fun KeyValueEditor(
     onItemRemove: (Int) -> Unit,
     onItemAdd: () -> Unit,
     modifier: Modifier = Modifier,
+    emptyMessage: String = "Tidak ada header khusus yang ditambahkan.",
     keyPlaceholder: String = "Key (e.g. Authorization)",
     valPlaceholder: String = "Value (e.g. Bearer token)"
+) {
+    KeyValueListEditor(
+        items = items,
+        getKey = { it.key },
+        getValue = { it.value },
+        getIsEnabled = { it.isEnabled },
+        updateItem = { item, isEnabled, key, value -> item.copy(isEnabled = isEnabled, key = key, value = value) },
+        onItemChange = onItemChange,
+        onItemRemove = onItemRemove,
+        onItemAdd = onItemAdd,
+        modifier = modifier,
+        emptyMessage = emptyMessage,
+        keyPlaceholder = keyPlaceholder,
+        valPlaceholder = valPlaceholder
+    )
+}
+
+@Composable
+@JvmName("QueryParamsEditor")
+fun KeyValueEditor(
+    items: List<QueryParamItem>,
+    onItemChange: (Int, QueryParamItem) -> Unit,
+    onItemRemove: (Int) -> Unit,
+    onItemAdd: () -> Unit,
+    modifier: Modifier = Modifier,
+    emptyMessage: String = "Tidak ada query parameter yang ditambahkan.",
+    keyPlaceholder: String = "Key (e.g. page)",
+    valPlaceholder: String = "Value (e.g. 1)"
+) {
+    KeyValueListEditor(
+        items = items,
+        getKey = { it.key },
+        getValue = { it.value },
+        getIsEnabled = { it.isEnabled },
+        updateItem = { item, isEnabled, key, value -> item.copy(isEnabled = isEnabled, key = key, value = value) },
+        onItemChange = onItemChange,
+        onItemRemove = onItemRemove,
+        onItemAdd = onItemAdd,
+        modifier = modifier,
+        emptyMessage = emptyMessage,
+        keyPlaceholder = keyPlaceholder,
+        valPlaceholder = valPlaceholder
+    )
+}
+
+@Composable
+private fun <T> KeyValueListEditor(
+    items: List<T>,
+    getKey: (T) -> String,
+    getValue: (T) -> String,
+    getIsEnabled: (T) -> Boolean,
+    updateItem: (T, Boolean, String, String) -> T,
+    onItemChange: (Int, T) -> Unit,
+    onItemRemove: (Int) -> Unit,
+    onItemAdd: () -> Unit,
+    modifier: Modifier = Modifier,
+    emptyMessage: String,
+    keyPlaceholder: String,
+    valPlaceholder: String
 ) {
     Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         if (items.isEmpty()) {
             Text(
-                text = "Tidak ada header khusus yang ditambahkan.",
+                text = emptyMessage,
                 color = Color.Gray,
                 fontSize = 13.sp,
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -43,9 +104,9 @@ fun KeyValueEditor(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Checkbox(
-                    checked = item.isEnabled,
+                    checked = getIsEnabled(item),
                     onCheckedChange = { isChecked ->
-                        onItemChange(index, item.copy(isEnabled = isChecked))
+                        onItemChange(index, updateItem(item, isChecked, getKey(item), getValue(item)))
                     },
                     colors = CheckboxDefaults.colors(
                         checkedColor = MaterialTheme.colorScheme.primary
@@ -53,9 +114,9 @@ fun KeyValueEditor(
                 )
 
                 OutlinedTextField(
-                    value = item.key,
+                    value = getKey(item),
                     onValueChange = { onKey ->
-                        onItemChange(index, item.copy(key = onKey))
+                        onItemChange(index, updateItem(item, getIsEnabled(item), onKey, getValue(item)))
                     },
                     placeholder = { Text(keyPlaceholder, fontSize = 12.sp) },
                     singleLine = true,
@@ -70,9 +131,9 @@ fun KeyValueEditor(
                 )
 
                 OutlinedTextField(
-                    value = item.value,
+                    value = getValue(item),
                     onValueChange = { onVal ->
-                        onItemChange(index, item.copy(value = onVal))
+                        onItemChange(index, updateItem(item, getIsEnabled(item), getKey(item), onVal))
                     },
                     placeholder = { Text(valPlaceholder, fontSize = 12.sp) },
                     singleLine = true,
